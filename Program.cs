@@ -28,7 +28,11 @@ namespace Lab2ComputerVision
             var loopiloop = true;
             while (loopiloop)
             {
-
+                ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
+                cvClient = new ComputerVisionClient(credentials)
+                {
+                    Endpoint = endpoint
+                };
                 Console.WriteLine("\nWant image do you want to see? 1-2 or 3..write exit to quit program.");
                 var action = Console.ReadLine();
                 if (action == "1")
@@ -37,11 +41,7 @@ namespace Lab2ComputerVision
                     {
                         imageFile1 = args[0];
                     }
-                    ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
-                    cvClient = new ComputerVisionClient(credentials)
-                    {
-                        Endpoint = endpoint
-                    };
+
                     await AnalyzeImage(imageFile1);
                     await GetThumbnail(imageFile1);
 
@@ -52,11 +52,6 @@ namespace Lab2ComputerVision
                     {
                         imageFile2 = args[0];
                     }
-                    ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
-                    cvClient = new ComputerVisionClient(credentials)
-                    {
-                        Endpoint = endpoint
-                    };
                     await AnalyzeImage(imageFile2);
                     await GetThumbnail(imageFile2);
 
@@ -67,11 +62,6 @@ namespace Lab2ComputerVision
                     {
                         imageFile3 = args[0];
                     }
-                    ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
-                    cvClient = new ComputerVisionClient(credentials)
-                    {
-                        Endpoint = endpoint
-                    };
                     await AnalyzeImage(imageFile3);
                     await GetThumbnail(imageFile3);
 
@@ -81,26 +71,22 @@ namespace Lab2ComputerVision
                     loopiloop = false;
                 }
             }
-
-            
-
             static async Task AnalyzeImage(string imageFile)
             {
                 Console.WriteLine($"\nAnalyserar bilden du har skickat in....{imageFile}");
                 List<VisualFeatureTypes?> features = new List<VisualFeatureTypes?>()
-            { VisualFeatureTypes.Description,
-            VisualFeatureTypes.Tags,
-            VisualFeatureTypes.Adult
-            };
+                { 
+                VisualFeatureTypes.Description,
+                VisualFeatureTypes.Tags,
+                VisualFeatureTypes.Adult
+                };
                 using (var imageData = File.OpenRead(imageFile))
                 {
                     var analysis = await cvClient.AnalyzeImageInStreamAsync(imageData, features);
-                    // get image captions
                     foreach (var caption in analysis.Description.Captions)
                     {
                         Console.WriteLine($"\nDescription: {caption.Text} (confidence:{caption.Confidence.ToString("P")})");
                     }
-
                     if (analysis.Tags.Count > 0)
                     {
                         Console.WriteLine("Tags:");

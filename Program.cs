@@ -48,7 +48,6 @@ namespace Lab2ComputerVision
             using (var imageData = File.OpenRead(imageFile))
             {
                 var analysis = await cvClient.AnalyzeImageInStreamAsync(imageData, features);
-                // get image captions
                 foreach (var caption in analysis.Description.Captions)
                 {
                     Console.WriteLine($"Description: {caption.Text} (confidence:{caption.Confidence.ToString("P")})");

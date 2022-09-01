@@ -29,84 +29,106 @@ namespace Lab2ComputerVision
             while (loopiloop)
             {
 
-            Console.WriteLine("Want image do you want to see? 1-2 or 3..write exit to quit program.");
-            var action = Console.ReadLine();
-            if (action == "1")
-            {
-                if (args.Length > 0)
+                Console.WriteLine("\nWant image do you want to see? 1-2 or 3..write exit to quit program.");
+                var action = Console.ReadLine();
+                if (action == "1")
                 {
-                    imageFile1 = args[0];
+                    if (args.Length > 0)
+                    {
+                        imageFile1 = args[0];
+                    }
+                    ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
+                    cvClient = new ComputerVisionClient(credentials)
+                    {
+                        Endpoint = endpoint
+                    };
+                    await AnalyzeImage(imageFile1);
+                    await GetThumbnail(imageFile1);
+
                 }
-                ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
-                cvClient = new ComputerVisionClient(credentials)
+                else if (action == "2")
                 {
-                    Endpoint = endpoint
-                };
-                await AnalyzeImage(imageFile1);
-            }
-            else if (action == "2")
-            {
-                if (args.Length > 0)
-                {
-                    imageFile2 = args[0];
+                    if (args.Length > 0)
+                    {
+                        imageFile2 = args[0];
+                    }
+                    ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
+                    cvClient = new ComputerVisionClient(credentials)
+                    {
+                        Endpoint = endpoint
+                    };
+                    await AnalyzeImage(imageFile2);
+                    await GetThumbnail(imageFile2);
+
                 }
-                ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
-                cvClient = new ComputerVisionClient(credentials)
+                else if (action == "3")
                 {
-                    Endpoint = endpoint
-                };
-                await AnalyzeImage(imageFile2);
-            }
-            else if (action == "3")
-            {
-                if (args.Length > 0)
-                {
-                    imageFile3 = args[0];
+                    if (args.Length > 0)
+                    {
+                        imageFile3 = args[0];
+                    }
+                    ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
+                    cvClient = new ComputerVisionClient(credentials)
+                    {
+                        Endpoint = endpoint
+                    };
+                    await AnalyzeImage(imageFile3);
+                    await GetThumbnail(imageFile3);
+
                 }
-                ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
-                cvClient = new ComputerVisionClient(credentials)
+                else if (action == "exit")
                 {
-                    Endpoint = endpoint
-                };
-                await AnalyzeImage(imageFile3);
-            }
-            else if (action == "exit")
-            {
-                loopiloop = false;
-            }
+                    loopiloop = false;
+                }
             }
 
+            
 
-        }
-
-        static async Task AnalyzeImage(string imageFile)
-        {
-            Console.WriteLine($"Analyserar bilden du har skickat in....{imageFile}");
-            List<VisualFeatureTypes?> features = new List<VisualFeatureTypes?>()
+            static async Task AnalyzeImage(string imageFile)
+            {
+                Console.WriteLine($"\nAnalyserar bilden du har skickat in....{imageFile}");
+                List<VisualFeatureTypes?> features = new List<VisualFeatureTypes?>()
             { VisualFeatureTypes.Description,
             VisualFeatureTypes.Tags,
             VisualFeatureTypes.Adult
             };
-            using (var imageData = File.OpenRead(imageFile))
-            {
-                var analysis = await cvClient.AnalyzeImageInStreamAsync(imageData, features);
-                // get image captions
-                foreach (var caption in analysis.Description.Captions)
+                using (var imageData = File.OpenRead(imageFile))
                 {
-                    Console.WriteLine($"Description: {caption.Text} (confidence:{caption.Confidence.ToString("P")})");
-                }
-
-                if (analysis.Tags.Count > 0)
-                {
-                    Console.WriteLine("Tags:");
-                    foreach (var tag in analysis.Tags)
+                    var analysis = await cvClient.AnalyzeImageInStreamAsync(imageData, features);
+                    // get image captions
+                    foreach (var caption in analysis.Description.Captions)
                     {
-                        Console.WriteLine($" -{tag.Name} (confidence:{tag.Confidence.ToString("P")})");
+                        Console.WriteLine($"\nDescription: {caption.Text} (confidence:{caption.Confidence.ToString("P")})");
                     }
-                }
-                string ratings = $"Ratings:\n -Adult: {analysis.Adult.IsAdultContent}\n -Racy:{analysis.Adult.IsRacyContent}\n -Gore: {analysis.Adult.IsGoryContent}";
-                Console.WriteLine(ratings);
 
+                    if (analysis.Tags.Count > 0)
+                    {
+                        Console.WriteLine("Tags:");
+                        foreach (var tag in analysis.Tags)
+                        {
+                            Console.WriteLine($" -{tag.Name} (confidence:{tag.Confidence.ToString("P")})");
+                        }
+                    }
+                    string ratings = $"Ratings:\n -Adult: {analysis.Adult.IsAdultContent}\n -Racy:{analysis.Adult.IsRacyContent}\n -Gore: {analysis.Adult.IsGoryContent}";
+                    Console.WriteLine(ratings);
+
+                }
+            }
+            static async Task GetThumbnail(string imageFile)
+            {
+                Console.WriteLine("Generating thumbnail");
+
+                using (var imageData = File.OpenRead(imageFile))
+                {
+                    var thumbnailStream = await cvClient.GenerateThumbnailInStreamAsync(100,
+                   100, imageData, true);
+                    string thumbnailFileName = "C:\\Users\\me-na\\source\\repos\\Lab2ComputerVision\\thumbnail\\thumbnail.jpg";
+                    using (Stream thumbnailFile = File.Create(thumbnailFileName))
+                    {
+                        thumbnailStream.CopyTo(thumbnailFile);
+                    }
+                    Console.WriteLine($"Thumbnail saved in {thumbnailFileName}");
+                }
             }
         }
     }

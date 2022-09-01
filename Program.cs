@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision;
 using Microsoft.Azure.CognitiveServices.Vision.ComputerVision.Models;
@@ -21,19 +21,61 @@ namespace Lab2ComputerVision
             endpoint = configuration["endpoint"];
             key = configuration["key"];
 
-            string imageFile = "C:\\Users\\me-na\\source\\repos\\Lab2ComputerVision\\images\\bike.jpg";
-            
-            if (args.Length > 0)
+            string imageFile1 = "C:\\Users\\me-na\\source\\repos\\Lab2ComputerVision\\images\\bike.jpg";
+            string imageFile2 = "C:\\Users\\me-na\\source\\repos\\Lab2ComputerVision\\images\\buss.jpg";
+            string imageFile3 = "C:\\Users\\me-na\\source\\repos\\Lab2ComputerVision\\images\\simulator.jpg";
+
+            var loopiloop = true;
+            while (loopiloop)
             {
-                imageFile = args[0];
+
+            Console.WriteLine("Want image do you want to see? 1-2 or 3..write exit to quit program.");
+            var action = Console.ReadLine();
+            if (action == "1")
+            {
+                if (args.Length > 0)
+                {
+                    imageFile1 = args[0];
+                }
+                ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
+                cvClient = new ComputerVisionClient(credentials)
+                {
+                    Endpoint = endpoint
+                };
+                await AnalyzeImage(imageFile1);
             }
-            ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
-            cvClient = new ComputerVisionClient(credentials)
+            else if (action == "2")
             {
-                Endpoint = endpoint
-            };
-            await AnalyzeImage(imageFile);
-            Console.ReadKey();
+                if (args.Length > 0)
+                {
+                    imageFile2 = args[0];
+                }
+                ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
+                cvClient = new ComputerVisionClient(credentials)
+                {
+                    Endpoint = endpoint
+                };
+                await AnalyzeImage(imageFile2);
+            }
+            else if (action == "3")
+            {
+                if (args.Length > 0)
+                {
+                    imageFile3 = args[0];
+                }
+                ApiKeyServiceClientCredentials credentials = new ApiKeyServiceClientCredentials(key);
+                cvClient = new ComputerVisionClient(credentials)
+                {
+                    Endpoint = endpoint
+                };
+                await AnalyzeImage(imageFile3);
+            }
+            else if (action == "exit")
+            {
+                loopiloop = false;
+            }
+            }
+
 
         }
 
@@ -48,6 +90,7 @@ namespace Lab2ComputerVision
             using (var imageData = File.OpenRead(imageFile))
             {
                 var analysis = await cvClient.AnalyzeImageInStreamAsync(imageData, features);
+                // get image captions
                 foreach (var caption in analysis.Description.Captions)
                 {
                     Console.WriteLine($"Description: {caption.Text} (confidence:{caption.Confidence.ToString("P")})");
